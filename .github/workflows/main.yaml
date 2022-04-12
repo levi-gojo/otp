@@ -80,10 +80,10 @@ jobs:
             docker ps
             #free -mh && sudo sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' && sudo free -mh
             
-            BASE_TAG=$(grep "BASE" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
+            BASE_TAG=$(grep "ARG BASE=" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
-            docker pull docker.pkg.github.com/levi-gojo/otp/ubuntu-base
+            docker pull ${{ steps.base.outputs.BASE_TAG }}
             
             docker build --pull --tag ${{ steps.base.outputs.BASE_TAG }} \
             --cache-from ${{ steps.base.outputs.BASE_TAG }} \
