@@ -79,7 +79,7 @@ jobs:
             docker info | grep Version
             docker ps
             #free -mh && sudo sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' && sudo free -mh
-            
+            #update
             BASE_TAG=$(grep "ARG BASE=" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
