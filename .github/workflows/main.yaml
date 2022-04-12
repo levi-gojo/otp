@@ -83,12 +83,12 @@ jobs:
             BASE_TAG=$(grep "ARG BASE=" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
-            docker pull ${{ steps.base.outputs.BASE_TAG }}
+            docker pull docker.pkg.github.com/levi-gojo/otp/ubuntu-base
             
-            docker build --pull --tag ${{ steps.base.outputs.BASE_TAG }} \
-            --cache-from ${{ steps.base.outputs.BASE_TAG }} \
-            --file .github/dockerfiles/Dockerfile.${{ steps.base.outputs.BASE_TYPE }} \
-            --build-arg BASE=${{ steps.base.outputs.BASE }} .
+            docker build --pull --tag docker.pkg.github.com/levi-gojo/otp/ubuntu-base \
+            --cache-from docker.pkg.github.com/levi-gojo/otp/ubuntu-base \
+            --file .github/dockerfiles/Dockerfile.ubuntu-base \
+            --build-arg BASE=ubuntu .
             
             docker build --tag otp --file .github/dockerfiles/Dockerfile.${{ matrix.type }} \
             --build-arg ARCHIVE=otp_src.tar.gz .
