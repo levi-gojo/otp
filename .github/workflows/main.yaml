@@ -129,8 +129,8 @@ jobs:
           path: otp/release/win32/otp*.exe
 
   build:
-    name: Build Erlang/OTP
-    runs-on: ubuntu-latest
+    name: Build Erlang/OTP on s390x
+    runs-on: ubuntu-18.04
     needs: pack
 
     strategy:
@@ -152,7 +152,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Calculate BASE image
         uses: uraimo/run-on-arch-action@master
-        id: base
         with:
           arch: s390x
           distro: ubuntu18.04
