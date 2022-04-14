@@ -161,12 +161,12 @@ jobs:
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
             
-            docker pull ${{ steps.base.outputs.BASE_TAG }}
+            docker pull ${{BASE_TAG }}
             
-            docker build --pull --tag ${{ steps.base.outputs.BASE_TAG }} \
-              --cache-from ${{ steps.base.outputs.BASE_TAG }} \
-              --file .github/dockerfiles/Dockerfile.${{ steps.base.outputs.BASE_TYPE }} \
-              --build-arg BASE=${{ steps.base.outputs.BASE }} .
+            docker build --pull --tag ${{BASE_TAG }} \
+              --cache-from ${{BASE_TAG }} \
+              --file .github/dockerfiles/Dockerfile.${{BASE_TYPE }} \
+              --build-arg BASE=${{BASE }} .
               
             docker build --tag otp --file .github/dockerfiles/Dockerfile.${{ matrix.type }} \
               --build-arg ARCHIVE=otp_src.tar.gz .  
