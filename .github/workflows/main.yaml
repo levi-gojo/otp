@@ -135,7 +135,7 @@ jobs:
 
     strategy:
       matrix:
-        type: [64-bit,32-bit,cross-compile,documentation]
+        type: [64-bit]
       fail-fast: false
 
     steps:
@@ -151,11 +151,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Calculate BASE image
+        uses: uraimo/run-on-arch-action@master
         id: base
-        run: |
-          BASE_TAG=$(grep "^FROM" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
-          echo "::set-output name=BASE_TAG::${BASE_TAG}"
-          .github/scripts/base-tag "${BASE_TAG}"
+        with:
+          arch: s390x
+          distro: ubuntu18.04
+          run: |
+            BASE_TAG=$(grep "^FROM" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
+            echo "::set-output name=BASE_TAG::${BASE_TAG}"
+            .github/scripts/base-tag "${BASE_TAG}"
       - name: Pull BASE image
         run: docker pull ${{ steps.base.outputs.BASE_TAG }}
       - name: Build BASE image
@@ -220,71 +224,71 @@ jobs:
           path: otp_src.tar.gz
 
   ## If this is a tag that has been pushed we do some release work
-  release:
-    name: Release Erlang/OTP
-    runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/') && github.repository == 'erlang/otp'
-    steps:
-      ## This step outputs the tag name and whether the tag is a release or patch
-      ## (all releases have only two version identifiers, while patches have three
-      ##  or more)
-      - name: Get Tag Name
-        id: tag
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          IS_RELEASE=`$(echo $TAG | grep -E '^OTP-[0-9]+\.[0-9]+$' > /dev/null) \
-            && echo "true" || echo "false"`
-          VSN=${TAG#OTP-}
-          echo "::set-output name=tag::${TAG}"
-          echo "::set-output name=release::${IS_RELEASE}"
-          echo "::set-output name=vsn::${VSN}"
+#   release:
+#     name: Release Erlang/OTP
+#     runs-on: ubuntu-latest
+#     needs: build
+#     if: startsWith(github.ref, 'refs/tags/') && github.repository == 'erlang/otp'
+#     steps:
+#       ## This step outputs the tag name and whether the tag is a release or patch
+#       ## (all releases have only two version identifiers, while patches have three
+#       ##  or more)
+#       - name: Get Tag Name
+#         id: tag
+#         run: |
+#           TAG=${GITHUB_REF#refs/tags/}
+#           IS_RELEASE=`$(echo $TAG | grep -E '^OTP-[0-9]+\.[0-9]+$' > /dev/null) \
+#             && echo "true" || echo "false"`
+#           VSN=${TAG#OTP-}
+#           echo "::set-output name=tag::${TAG}"
+#           echo "::set-output name=release::${IS_RELEASE}"
+#           echo "::set-output name=vsn::${VSN}"
       
-      - uses: actions/checkout@v2
+#       - uses: actions/checkout@v2
 
-      ## Publish the pre-built archive and docs
-      - name: Download source archive
-        uses: actions/download-artifact@v2
-        with:
-          name: otp_prebuilt
-      - name: Download html docs
-        uses: actions/download-artifact@v2
-        with:
-          name: otp_doc_html
-      - name: Download man docs
-        uses: actions/download-artifact@v2
-        with:
-          name: otp_doc_man
+#       ## Publish the pre-built archive and docs
+#       - name: Download source archive
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: otp_prebuilt
+#       - name: Download html docs
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: otp_doc_html
+#       - name: Download man docs
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: otp_doc_man
 
-      ## We add the correct version name into the file names
-      ## and create the hash files for all assets
-      - name: Create pre-build and doc archives
-        run: .github/scripts/create-artifacts.sh artifacts ${{ steps.tag.outputs.tag }}
+#       ## We add the correct version name into the file names
+#       ## and create the hash files for all assets
+#       - name: Create pre-build and doc archives
+#         run: .github/scripts/create-artifacts.sh artifacts ${{ steps.tag.outputs.tag }}
 
-      - name: Build OTP Bundle
-        if: steps.tag.outputs.release == 'true'
-        run: |
-          scripts/bundle-otp ${{ steps.tag.outputs.tag }}
+#       - name: Build OTP Bundle
+#         if: steps.tag.outputs.release == 'true'
+#         run: |
+#           scripts/bundle-otp ${{ steps.tag.outputs.tag }}
 
-      ## Create hash files
-      - name: Create pre-build and doc archives
-        run: |
-          shopt -s nullglob
-          cd artifacts
-          md5sum {*.tar.gz,*.txt} > MD5.txt
-          sha256sum {*.tar.gz,*.txt} > SHA256.txt
+#       ## Create hash files
+#       - name: Create pre-build and doc archives
+#         run: |
+#           shopt -s nullglob
+#           cd artifacts
+#           md5sum {*.tar.gz,*.txt} > MD5.txt
+#           sha256sum {*.tar.gz,*.txt} > SHA256.txt
 
-      - name: Upload pre-built and doc tar archives
-        uses: softprops/action-gh-release@v1
-        with:
-          name: OTP ${{ steps.tag.outputs.vsn }}
-          files: |
-            artifacts/*.tar.gz
-            artifacts/*.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Deploy on erlang.org
-        env:
-          GITHUB_TOKEN: ${{ secrets.TRIGGER_ERLANG_ORG_BUILD }}
-        run: |
-          curl -H "Authorization: token ${GITHUB_TOKEN}" -X POST -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/erlang/erlang-org/actions/workflows/update-gh-cache.yaml/dispatches" -d '{"ref":"master"}'
+#       - name: Upload pre-built and doc tar archives
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           name: OTP ${{ steps.tag.outputs.vsn }}
+#           files: |
+#             artifacts/*.tar.gz
+#             artifacts/*.txt
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Deploy on erlang.org
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.TRIGGER_ERLANG_ORG_BUILD }}
+#         run: |
+#           curl -H "Authorization: token ${GITHUB_TOKEN}" -X POST -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/erlang/erlang-org/actions/workflows/update-gh-cache.yaml/dispatches" -d '{"ref":"master"}'
