@@ -158,7 +158,17 @@ jobs:
           distro: ubuntu18.04
           run: |
             apt-get update
-            apt-get install docker-ce docker-ce-cli containerd.io
+            apt-get update
+            apt install -y wget tar iptables patch libdevmapper-dev 
+            wget https://download.docker.com/linux/static/stable/s390x/docker-18.06.3-ce.tgz
+            tar -xvf docker-18.06.3-ce.tgz
+            cp docker/* /bin
+            nohup dockerd &
+            sleep 20s
+            ps -aef | grep dockerd
+            chmod ugo+rw /var/run/docker.sock
+            docker info | grep Version
+            docker ps
             
             BASE_TAG=$(grep "^FROM" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
