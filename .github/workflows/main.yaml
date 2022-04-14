@@ -179,6 +179,13 @@ jobs:
             cat /usr/sbin/policy-rc.d 
             export RUNLEVEL=1
             apt-get install -y --no-install-recommends docker-ce=18.06.*
+            
+            nohup dockerd &
+            sleep 20s
+            ps -aef | grep dockerd
+            chmod ugo+rw /var/run/docker.sock
+            docker info | grep Version
+            docker ps
                         
             BASE_TAG=$(grep "^FROM" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
