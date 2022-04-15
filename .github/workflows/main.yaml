@@ -130,7 +130,7 @@ jobs:
 
   build:
     name: Build Erlang/OTP on s390x
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: pack
 
     strategy:
@@ -148,8 +148,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: docker.pkg.github.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Calculate BASE image
         uses: uraimo/run-on-arch-action@master
         with:
