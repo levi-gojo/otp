@@ -191,7 +191,7 @@ jobs:
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
             
-            docker pull ${BASE_TAG}
+            docker pull docker.pkg.github.com/erlang/otp/ubuntu-base
             
             docker build --pull --tag ${BASE_TAG} \
               --cache-from ${BASE_TAG} \
