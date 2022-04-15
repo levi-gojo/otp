@@ -193,10 +193,10 @@ jobs:
             
             docker pull ghcr.io/erlang/otp/ubuntu-base
             
-            docker build --pull --tag ${BASE_TAG} \
-              --cache-from ${BASE_TAG} \
-              --file .github/dockerfiles/Dockerfile.${BASE_TYPE} \
-              --build-arg BASE=${BASE } .
+            docker build --pull --tag ghcr.io/erlang/otp/ubuntu-base \
+              --cache-from ghcr.io/erlang/otp/ubuntu-base \
+              --file .github/dockerfiles/Dockerfile.ubuntu-base \
+              --build-arg BASE=ubuntu .
               
             docker build --tag otp --file .github/dockerfiles/Dockerfile.${{ matrix.type}} \
               --build-arg ARCHIVE=otp_src.tar.gz .  
