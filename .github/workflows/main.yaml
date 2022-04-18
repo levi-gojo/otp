@@ -191,11 +191,11 @@ jobs:
             echo "::set-output name=BASE_TAG::${BASE_TAG}"
             .github/scripts/base-tag "${BASE_TAG}"
             
-            docker pull docker.pkg.github.com/erlang/otp/ubuntu-base
+            #docker pull docker.pkg.github.com/erlang/otp/ubuntu-base
             
-            docker build --pull --tag docker.pkg.github.com/erlang/otp/ubuntu-base \
-              --cache-from docker.pkg.github.com/erlang/otp/ubuntu-base \
-              --file .github/dockerfiles/Dockerfile.ubuntu-base \
+            #docker build --pull --tag docker.pkg.github.com/erlang/otp/ubuntu-base \
+            #  --cache-from docker.pkg.github.com/erlang/otp/ubuntu-base \
+            docker build  --file .github/dockerfiles/Dockerfile.ubuntu-base \
               --build-arg BASE=ubuntu .
               
             docker build --tag otp --file .github/dockerfiles/Dockerfile.${{ matrix.type}} \
