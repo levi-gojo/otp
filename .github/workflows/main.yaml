@@ -68,7 +68,7 @@ jobs:
           distro: ubuntu18.04
           run: |
             apt-get update
-            apt install -y wget tar iptables patch libdevmapper-dev 
+            apt install -y wget tar iptables patch libdevmapper-dev git
             wget https://download.docker.com/linux/static/stable/s390x/docker-18.06.0-ce.tgz
             tar -xvf docker-18.06.0-ce.tgz
             cp docker/* /bin
@@ -78,15 +78,19 @@ jobs:
             chmod ugo+rw /var/run/docker.sock
             docker info | grep Version
             docker ps
+            
             #free -mh && sudo sync && sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' && sudo free -mh
             #update
-            BASE_TAG=$(grep "ARG BASE=" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
-            echo "::set-output name=BASE_TAG::${BASE_TAG}"
-            .github/scripts/base-tag "${BASE_TAG}"
-            docker pull docker.pkg.github.com/erlang/otp/ubuntu-base
+            #BASE_TAG=$(grep "ARG BASE=" .github/dockerfiles/Dockerfile.${{ matrix.type }} | head -1 | awk '{print $2}')
+            #echo "::set-output name=BASE_TAG::${BASE_TAG}"
+            #.github/scripts/base-tag "${BASE_TAG}"
+            #docker pull docker.pkg.github.com/erlang/otp/ubuntu-base
             
-            docker build --pull --tag docker.pkg.github.com/erlang/otp/ubuntu-base \
-            --cache-from docker.pkg.github.com/erlang/otp/ubuntu-base \
+            git clone https://github.com/gitpod-io/workspace-images.git
+            cd workspace-images/base/
+            docker build --tag gitpod/workflow-full .
+            
+            docker build --tag docker.pkg.github.com/erlang/otp/ubuntu-base \
             --file .github/dockerfiles/Dockerfile.ubuntu-base \
             --build-arg BASE=ubuntu .
             
